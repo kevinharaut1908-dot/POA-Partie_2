@@ -30,3 +30,19 @@ def joss(mes_coups, coups_adverses, rng):
     if coup == "C" and rng.random() < PROBA_TRAHISON_JOSS:
         return "D"
     return coup
+
+
+def tester(mes_coups, coups_adverses, rng):
+    """TESTER : D au premier tour
+    - Si l'adversaire a deja joue D -> joue TIT-FOR-TAT
+    - Sinon repete le motif C, C, D"""
+    tour = len(mes_coups)  # numéro du tour, en partant de 0
+
+    if tour == 0:
+        return "D"
+
+    if "D" in coups_adverses:
+        return tit_for_tat(mes_coups, coups_adverses, rng)
+
+    # L'adversaire n'a jamais D : C, C, D en boucle
+    return "D" if tour % 3 == 0 else "C"
