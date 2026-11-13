@@ -9,6 +9,11 @@ def all_d(mes_coups, coups_adverses, rng):
     return "D"
 
 
+def random_strat(mes_coups, coups_adverses, rng):
+    """RANDOM : coopère ou trahit avec une probabilité 1/2, sans regarder l'historique."""
+    return "C" if rng.random() < 0.5 else "D"
+
+
 def tit_for_tat(mes_coups, coups_adverses, rng):
     """TIT-FOR-TAT : coopère au premier tour, puis copie le dernier coup adverse."""
     if not coups_adverses:
