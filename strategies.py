@@ -19,3 +19,14 @@ def tit_for_tat(mes_coups, coups_adverses, rng):
     if not coups_adverses:
         return "C"
     return coups_adverses[-1]
+
+
+PROBA_TRAHISON_JOSS = 0.1
+
+
+def joss(mes_coups, coups_adverses, rng):
+    """JOSS : comme TFT mais si il coopère il y a 10% de chance de trahir au final"""
+    coup = tit_for_tat(mes_coups, coups_adverses, rng)
+    if coup == "C" and rng.random() < PROBA_TRAHISON_JOSS:
+        return "D"
+    return coup
