@@ -7,6 +7,7 @@ Une stratégie est une simple fonction :
         pour que tout le hasard dépende d'une seule graine.
 """
 
+import itertools
 import random
 
 # Matrice des gains du cours : (mon coup, coup adverse) -> (mon gain, gain adverse)
@@ -43,3 +44,41 @@ def jouer_partie(strat1, strat2, n_tours=200, rng=None):
         coups2.append(c2)
 
     return score1, score2
+
+
+def tournoi(strategies, n_parties=5, n_tours=200, rng=None):
+    """Tournoi tous contre tous au format d'Axelrod.
+
+    strategies : dictionnaire {nom: fonction de stratégie}
+    Chaque paire de stratégies distinctes joue n_parties parties de n_tours.
+    Une stratégie ne joue pas contre elle-même (comme le mini-tournoi du cours, CM4 p.68).
+
+    Renvoie (scores, duels) :
+    - scores : {nom: score total sur tout le tournoi}
+    - duels  : {(nom1, nom2): score total de nom1 contre nom2}
+    """
+    if rng is None:
+        rng = random.Random()
+
+    scores = {nom: 0 for nom in strategies}
+    duels = {}
+
+    # itertools.combinations -> donne toutes les paires possibles, une seule fois chacune sans jouer contre elle meme (A contre A)
+    for (nom1, s1), (nom2, s2) in itertools.combinations(strategies.items(), 2):
+        total1, total2 = 0, 0
+        for _ in range(n_parties):
+            score1, score2 = jouer_partie(s1, s2, n_tours, rng)
+            total1 += score1
+            total2 += score2
+
+        duels[(nom1, nom2)] = total1
+        duels[(nom2, nom1)] = total2
+        scores[nom1] += total1
+        scores[nom2] += total2
+
+    return scores, duels
+
+
+def classement(scores):
+    """Renvoie la liste [(nom, score), ...] triée du meilleur au moins bon."""
+    return sorted(scores.items(), key=lambda item: item[1], reverse=True)
