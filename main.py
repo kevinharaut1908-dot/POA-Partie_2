@@ -46,8 +46,6 @@ def afficher_classement(scores):
 
 
 def afficher_duels(strategies, duels):
-    """Tableau croisé : ligne = stratégie, colonne = adversaire,
-    case = points gagnés par la ligne contre la colonne."""
     noms = list(strategies)
     largeur = 13
     print("Points de la ligne contre la colonne")
@@ -61,7 +59,6 @@ def afficher_duels(strategies, duels):
 
 
 def afficher_selection(strategies, historique):
-    """Affiche la part de chaque stratégie (en %) à quelques générations choisies."""
     noms = list(strategies)
     dernieres = len(historique) - 1
     a_afficher = [g for g in range(dernieres + 1)
@@ -87,7 +84,7 @@ def main():
     parser.add_argument("--graphique", metavar="FICHIER.svg",
                         help="avec --generations : enregistre la courbe d'évolution dans ce fichier SVG")
     parser.add_argument("--contre-soi", action="store_true",
-                        help="chaque stratégie affronte aussi son double (comme Axelrod 1980)")
+                        help="chaque stratégie affronte aussi son double")
     args = parser.parse_args()
 
     strategies = POPULATIONS[args.etape]

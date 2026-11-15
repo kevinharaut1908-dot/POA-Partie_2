@@ -1,12 +1,3 @@
-"""Moteur du dilemme du prisonnier itéré.
-
-Une stratégie est une simple fonction :
-    strategie(mes_coups, coups_adverses, rng) -> "C" ou "D"
-- mes_coups / coups_adverses : listes des coups déjà joués (ex. ["C", "D", "C"])
-- rng : générateur aléatoire (random.Random) fourni par le moteur,
-        pour que tout le hasard dépende d'une seule graine.
-"""
-
 import itertools
 import random
 
@@ -20,19 +11,11 @@ GAINS = {
 
 
 def inverser(coup):
-    """Renvoie le coup opposé : C devient D, D devient C."""
     return "D" if coup == "C" else "C"
 
 
 def jouer_partie(strat1, strat2, n_tours=200, rng=None, bruit=0.0):
-    """Fait jouer une partie de n_tours entre deux stratégies.
 
-    bruit : probabilité qu'un coup soit inversé par erreur (0.05 = 5 %).
-    C'est le coup réellement joué (après erreur éventuelle) qui compte
-    pour les gains et qui entre dans l'historique.
-
-    Renvoie (score1, score2).
-    """
     if rng is None:
         rng = random.Random()
 
@@ -40,13 +23,10 @@ def jouer_partie(strat1, strat2, n_tours=200, rng=None, bruit=0.0):
     score1, score2 = 0, 0
 
     for _ in range(n_tours):
-        # Les deux joueurs choisissent "en même temps" : chacun ne voit que
-        # l'historique des tours précédents, jamais le coup actuel de l'autre.
         c1 = strat1(coups1, coups2, rng)
         c2 = strat2(coups2, coups1, rng)
 
         # Bruit : chaque coup peut être inversé.
-        # (Si bruit == 0, on ne tire rien : les résultats des étapes 1 et 2 restent identiques.)
         if bruit > 0:
             if rng.random() < bruit:
                 c1 = inverser(c1)
@@ -64,19 +44,7 @@ def jouer_partie(strat1, strat2, n_tours=200, rng=None, bruit=0.0):
 
 
 def tournoi(strategies, n_parties=5, n_tours=200, rng=None, contre_soi=False, bruit=0.0):
-    """Tournoi tous contre tous au format d'Axelrod.
 
-    strategies : dictionnaire {nom: fonction de stratégie}
-    Chaque paire de stratégies distinctes joue n_parties parties de n_tours.
-    Par défaut, une stratégie ne joue pas contre elle-même (comme le mini-tournoi
-    du cours, CM4 p.68). Avec contre_soi=True, chaque stratégie affronte aussi
-    son double, comme dans le vrai tournoi d'Axelrod de 1980 ; on ne compte
-    alors que le score d'une des deux copies.
-
-    Renvoie (scores, duels) :
-    - scores : {nom: score total sur tout le tournoi}
-    - duels  : {(nom1, nom2): score total de nom1 contre nom2}
-    """
     if rng is None:
         rng = random.Random()
 
@@ -112,26 +80,12 @@ def tournoi(strategies, n_parties=5, n_tours=200, rng=None, contre_soi=False, br
 
 
 def classement(scores):
-    """Renvoie la liste [(nom, score), ...] triée du meilleur au moins bon."""
+    # Renvoie la liste [(nom, score), ...] triée du meilleur au moins bon.
     return sorted(scores.items(), key=lambda item: item[1], reverse=True)
 
 
 def selection(strategies, duels, n_generations=100, contre_soi=False):
-    """Fait évoluer la population sur plusieurs générations (dynamique du réplicateur).
 
-    duels : résultats d'un tournoi, {(nom1, nom2): points de nom1 contre nom2}.
-    Ces résultats ne changent pas : ce qui change d'une génération à l'autre,
-    c'est la part de chaque stratégie dans la population.
-
-    À chaque génération :
-    - le score d'une stratégie est la moyenne de ses points contre les autres,
-      pondérée par leur part dans la population (sans sa propre espèce,
-      sauf si contre_soi=True) ;
-    - sa nouvelle part est proportionnelle à : part actuelle × score.
-
-    Renvoie la liste des populations, de la génération 0 à n_generations :
-    [{nom: part}, ...], où chaque part est entre 0 et 1.
-    """
     noms = list(strategies)
     parts = {nom: 1 / len(noms) for nom in noms}  # au départ, toutes à égalité
     historique = [dict(parts)]
@@ -147,7 +101,6 @@ def selection(strategies, duels, n_generations=100, contre_soi=False):
             points = sum(parts[autre] * duels[(nom, autre)] for autre in adversaires)
             scores[nom] = points / poids_total
 
-        # Score moyen de la population : sert à remettre le total des parts à 1
         moyenne = sum(parts[nom] * scores[nom] for nom in noms)
         parts = {nom: parts[nom] * scores[nom] / moyenne for nom in noms}
         historique.append(dict(parts))

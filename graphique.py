@@ -1,16 +1,9 @@
-"""Graphique de l'évolution de la population, au format SVG.
 
-Écrit à la main (sans bibliothèque) pour que le projet n'ait aucune dépendance.
-Un fichier SVG s'ouvre dans n'importe quel navigateur et s'affiche dans le Markdown.
-"""
-
-# Une couleur par stratégie, bien distinctes les unes des autres
 COULEURS = ["#d62728", "#7f7f7f", "#1f77b4", "#ff7f0e",
             "#9467bd", "#2ca02c", "#17becf", "#e377c2"]
 
 
 def ecrire_svg(historique, chemin, titre="Évolution de la population"):
-    """Trace une courbe par stratégie : part dans la population (en %) selon la génération."""
     noms = list(historique[0])
     n_gen = len(historique) - 1
 
@@ -33,24 +26,20 @@ def ecrire_svg(historique, chemin, titre="Évolution de la population"):
         f'<text x="{largeur / 2}" y="24" text-anchor="middle" font-size="16">{titre}</text>',
     ]
 
-    # Grille horizontale et graduations en %
     for pourcent in range(0, 101, 10):
         yy = y(pourcent / 100)
         lignes.append(f'<line x1="{marge_g}" y1="{yy}" x2="{marge_g + zone_l}" y2="{yy}" stroke="#e5e5e5"/>')
         lignes.append(f'<text x="{marge_g - 8}" y="{yy + 4}" text-anchor="end">{pourcent} %</text>')
 
-    # Graduations des générations
     pas = 10 if n_gen >= 20 else 1
     for gen in range(0, n_gen + 1, pas):
         lignes.append(f'<text x="{x(gen)}" y="{marge_h + zone_h + 18}" text-anchor="middle">{gen}</text>')
     lignes.append(f'<text x="{marge_g + zone_l / 2}" y="{hauteur - 10}" text-anchor="middle">Génération</text>')
 
-    # Axes
     lignes.append(f'<line x1="{marge_g}" y1="{marge_h}" x2="{marge_g}" y2="{marge_h + zone_h}" stroke="black"/>')
     lignes.append(f'<line x1="{marge_g}" y1="{marge_h + zone_h}" x2="{marge_g + zone_l}" '
                   f'y2="{marge_h + zone_h}" stroke="black"/>')
 
-    # Une courbe et une entrée de légende par stratégie
     for i, nom in enumerate(noms):
         couleur = COULEURS[i % len(COULEURS)]
         points = " ".join(f"{x(g):.1f},{y(pop[nom]):.1f}" for g, pop in enumerate(historique))

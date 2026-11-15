@@ -28,7 +28,7 @@ Depuis la racine du dépôt :
 
 ```
 python3 main.py --seed 67                # Étape 1 : tournoi de base, format du cours
-python3 main.py --seed 67 --contre-soi   # Étape 1 : idem, chaque stratégie affronte aussi son double (Axelrod 1980)
+python3 main.py --seed 67 --contre-soi   # Étape 1 : idem, chaque stratégie affronte aussi son double
 python3 main.py --seed 67 --etape 2       # Étape 2 : population élargie (8 stratégies)
 python3 main.py --seed 67 --etape 2 --bruit 0.05   # Étape 3 : population élargie avec 5 % de bruit
 python3 main.py --seed 67 --etape 2 --generations 100 --graphique captures/selection.svg   # Étape 3 : sélection sur 100 générations
@@ -83,4 +83,17 @@ tournois reproductibles avec une seule graine.
 | PAVLOV | Coopère au premier tour ; garde son coup s'il a rapporté 3 ou 5 points, en change sinon. |
 | ALL-C | Coopère toujours. |
 
+## Modifications du tournoi (étape 3)
 
+| Modification | Principe | Commande |
+|---|---|---|
+| Bruit | Chaque coup est inversé par erreur avec une probabilité de 5 %. Personne ne sait qu'il y a eu une erreur : l'adversaire voit simplement une trahison (ou une coopération) inattendue. | `python3 main.py --seed 67 --etape 2 --bruit 0.05` |
+| Sélection | Le tournoi est joué une fois, puis la population évolue sur 100 générations : la part de chaque stratégie grandit ou rétrécit selon son score face aux autres, pondéré par leur part dans la population. | `python3 main.py --seed 67 --etape 2 --generations 100 --graphique captures/selection.svg` |
+
+L'horizon inconnu et le changement de matrice n'ont pas été retenus (raisons dans le journal).
+
+## Journal de bord
+
+Le journal est dans [`JOURNAL.md`](JOURNAL.md). Il contient le protocole, une fiche par
+stratégie, les prédictions de l'étape 3 écrites avant les résultats, les résultats commentés
+avec les captures d'écran (dossier `captures/`) et les impasses rencontrées.
