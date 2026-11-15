@@ -46,12 +46,15 @@ def jouer_partie(strat1, strat2, n_tours=200, rng=None):
     return score1, score2
 
 
-def tournoi(strategies, n_parties=5, n_tours=200, rng=None):
+def tournoi(strategies, n_parties=5, n_tours=200, rng=None, contre_soi=False):
     """Tournoi tous contre tous au format d'Axelrod.
 
     strategies : dictionnaire {nom: fonction de stratégie}
     Chaque paire de stratégies distinctes joue n_parties parties de n_tours.
-    Une stratégie ne joue pas contre elle-même (comme le mini-tournoi du cours, CM4 p.68).
+    Par défaut, une stratégie ne joue pas contre elle-même (comme le mini-tournoi
+    du cours, CM4 p.68). Avec contre_soi=True, chaque stratégie affronte aussi
+    son double, comme dans le vrai tournoi d'Axelrod de 1980 ; on ne compte
+    alors que le score d'une des deux copies.
 
     Renvoie (scores, duels) :
     - scores : {nom: score total sur tout le tournoi}
@@ -64,12 +67,24 @@ def tournoi(strategies, n_parties=5, n_tours=200, rng=None):
     duels = {}
 
     # itertools.combinations -> donne toutes les paires possibles, une seule fois chacune sans jouer contre elle meme (A contre A)
-    for (nom1, s1), (nom2, s2) in itertools.combinations(strategies.items(), 2):
+    # itertools.combinations_with_replacement -> pareil, mais ajoute les paires (A, A)
+    if contre_soi:
+        paires = itertools.combinations_with_replacement(strategies.items(), 2)
+    else:
+        paires = itertools.combinations(strategies.items(), 2)
+
+    for (nom1, s1), (nom2, s2) in paires:
         total1, total2 = 0, 0
         for _ in range(n_parties):
             score1, score2 = jouer_partie(s1, s2, n_tours, rng)
             total1 += score1
             total2 += score2
+
+        if nom1 == nom2:
+            # Match contre son double : on ne compte qu'une seule copie
+            duels[(nom1, nom1)] = total1
+            scores[nom1] += total1
+            continue
 
         duels[(nom1, nom2)] = total1
         duels[(nom2, nom1)] = total2
