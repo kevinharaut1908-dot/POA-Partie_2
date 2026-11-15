@@ -396,3 +396,111 @@ Observations :
 Prédiction (avant de relancer le tournoi) : ALL-C sera dernière. Elle devrait surtout
 **profiter à ALL-D** (+1000 par partie, soit +5000 sur 5 parties), qui pourrait ainsi
 rester en tête malgré l'arrivée de GRIM et PAVLOV.
+
+#### 10. Tournoi avec la population élargie — commit `feat: option --etape 2 (population élargie)`
+
+`main.py` accepte maintenant `--etape 1` (les 5 stratégies du cours) ou `--etape 2`
+(les 5 du cours + GRIM, PAVLOV, ALL-C).
+
+Commande : `python3 main.py --etape 2`
+
+<!-- CAPTURE : captures/etape2_classement.png -->
+
+```
+Étape 2 — Tournoi : 8 stratégies, 5 parties de 200 tours par duel, sans match contre soi-même, graine 67
+
+Classement
+------------------------------
+ 1. ALL-D            19991
+ 2. GRIM             18578
+ 3. TIT-FOR-TAT      18085
+ 4. TESTER           17091
+ 5. PAVLOV           17071
+ 6. JOSS             16446
+ 7. RANDOM           15944
+ 8. ALL-C            15204
+
+Points de la ligne contre la colonne
+                     ALL-D       RANDOM  TIT-FOR-TAT       TESTER         JOSS         GRIM       PAVLOV        ALL-C
+ALL-D                    -         3446         2015         2000         2015         2015         3500         5000
+RANDOM                1036            -         2538         2517         2330         1007         2520         3996
+TIT-FOR-TAT           1990         2518            -         2500         2077         3000         3000         3000
+TESTER                2000         2532         2500            -         2049         2005         2335         3670
+JOSS                  1990         2590         2102         2049            -         2081         2436         3198
+GRIM                  1990         3507         3000         2005         2076            -         3000         3000
+PAVLOV                1000         2455         3000         2335         2281         3000            -         3000
+ALL-C                    0         1506         3000         1995         2703         3000         3000            -
+```
+
+**Robustesse :** avec les graines 1 à 10, les trois premières places sont toujours
+ALL-D, GRIM, TIT-FOR-TAT, et ALL-C est toujours dernière. Seuls PAVLOV / TESTER
+(4e et 5e) s'échangent une fois sur dix.
+
+Avec les matchs contre soi-même (`python3 main.py --etape 2 --contre-soi`), **ALL-D reste
+première** (21991, devant GRIM 21545 et TFT 21025), alors qu'à l'étape 1 ce format faisait
+gagner TFT. Même résultat sur les graines 1 à 10.
+
+**Comparaison avec l'étape 1**
+
+| Rang | Étape 1 (5 stratégies) | Étape 2 (8 stratégies) |
+|---|---|---|
+| 1 | ALL-D | ALL-D |
+| 2 | TIT-FOR-TAT | **GRIM** (nouvelle) |
+| 3 | TESTER | TIT-FOR-TAT |
+| 4 | JOSS | TESTER |
+| 5 | RANDOM | **PAVLOV** (nouvelle) |
+| 6 | | JOSS |
+| 7 | | RANDOM |
+| 8 | | **ALL-C** (nouvelle) |
+
+L'ordre relatif des 5 stratégies du cours ne change pas. Les trois nouvelles s'insèrent :
+GRIM juste sous ALL-D, PAVLOV au milieu, ALL-C en dernier.
+
+**Vérification des prédictions faites en ajoutant les stratégies**
+
+| Prédiction | Résultat |
+|---|---|
+| GRIM se classe haut, peut-être devant ALL-D | **En partie.** 2e, devant TFT, mais derrière ALL-D. |
+| PAVLOV sous TFT sans bruit | **Oui.** 5e. Elle perd 1000 points contre ALL-D, là où TFT en fait 1990. |
+| ALL-C dernière, et profite surtout à ALL-D | **Oui.** ALL-D prend 5000 points à ALL-C, les gentilles seulement 3000. |
+
+**Pourquoi ALL-D reste en tête : elle vit de ses proies.** Sur ses 19991 points, ALL-D en
+prend 5000 à ALL-C et 3500 à PAVLOV (qui revient sans cesse à C), en plus de 3446 à RANDOM.
+Les trois stratégies qui ne punissent pas (ou mal) lui rapportent à elles seules 11946 points.
+
+**Expérience : le même tournoi sans ALL-C.** Pour vérifier que c'est bien la proie qui fait
+gagner ALL-D, j'ai relancé le tournoi en retirant uniquement ALL-C (graine 67) :
+
+```
+python3 -c "
+import random
+from moteur import tournoi, classement
+from main import POPULATION_ELARGIE as P
+pop = {n: s for n, s in P.items() if n != 'ALL-C'}
+for n, s in classement(tournoi(pop, rng=random.Random(67))[0]): print(f'{n:12} {s}')
+"
+
+GRIM         15573
+TIT-FOR-TAT  15106
+ALL-D        14991
+PAVLOV       14092
+TESTER       13405
+JOSS         13274
+RANDOM       11948
+```
+
+**Sans ALL-C, ALL-D passe de la 1re à la 3e place, et GRIM gagne.** Une seule stratégie
+naïve suffit à renverser le classement : ALL-C rapporte 5000 points à ALL-D mais seulement
+3000 aux gentilles, soit 2000 points d'écart en faveur d'ALL-D.
+
+**Pourquoi GRIM passe devant TFT.** Elles font exactement les mêmes scores contre les
+gentilles (3000) et contre ALL-D (1990). La différence vient de RANDOM : GRIM lui prend
+3507 points (elle passe en D définitif dès la première trahison), TFT seulement 2518
+(elle pardonne chaque fois que RANDOM recoopère). Contre une stratégie qui ne réagit pas
+aux punitions, pardonner ne rapporte rien.
+
+**Conclusion de l'étape 2 :** comme à l'étape 1, le classement est fixé par la composition
+de la population. Ajouter des stratégies gentilles (GRIM, PAVLOV) aide TFT, mais ajouter
+une proie (ALL-C) aide encore plus ALL-D. Les stratégies qui gagnent sont celles qui
+**punissent** (GRIM, TFT, ALL-D) ; celles qui ne punissent pas ou mal (ALL-C, PAVLOV
+contre ALL-D, RANDOM) nourrissent les autres.
