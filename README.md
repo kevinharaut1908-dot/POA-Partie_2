@@ -34,6 +34,13 @@ python3 main.py --seed 67 --etape 2 --bruit 0.05   # Étape 3 : population élar
 python3 main.py --seed 67 --etape 2 --generations 100 --graphique captures/selection.svg   # Étape 3 : sélection sur 100 générations
 ```
 
+Pour faire jouer une seule paire de stratégies et voir les coups joués tour par tour :
+
+```
+python3 main.py --duel TIT-FOR-TAT JOSS                  # 5 parties de 200 tours, graine 67
+python3 main.py --duel GRIM PAVLOV --bruit 0.05          # un duel avec 5 % de bruit
+```
+
 Options :
 
 | Option | Défaut | Rôle |
@@ -46,6 +53,18 @@ Options :
 | `--generations` | 0 | nombre de générations de sélection après le tournoi (0 = pas de sélection) |
 | `--graphique` | aucun | avec `--generations`, enregistre la courbe d'évolution dans un fichier SVG |
 | `--contre-soi` | désactivé | ajoute le match de chaque stratégie contre son double |
+| `--duel` | aucun | fait jouer une seule paire de stratégies (noms : ALL-D, RANDOM, TIT-FOR-TAT, TESTER, JOSS, GRIM, PAVLOV, ALL-C) et affiche les scores et les coups |
+
+Le nombre de tours par partie et le nombre de parties se choisissent avec `--tours` et
+`--parties`. Par défaut, c'est le format d'Axelrod : **5 parties de 200 tours**. Ces options
+marchent pour tous les tournois et pour `--duel`, par exemple :
+
+```
+python3 main.py --tours 100 --parties 3
+python3 main.py --duel TIT-FOR-TAT JOSS --tours 50 --parties 1
+```
+
+Tous les tournois du journal ont été joués avec les valeurs par défaut.
 
 La graine (`--seed`) fixe tout le hasard du tournoi : la même graine redonne
 exactement le même classement.

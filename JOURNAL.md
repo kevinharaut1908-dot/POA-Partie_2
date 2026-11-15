@@ -23,6 +23,11 @@ règles le plus fidèlement possible, pour pouvoir comparer mes résultats aux s
 | La graine | 67 | Pour que les résultats soient exactement les mêmes à chaque lancement (mes tout premiers essais utilisaient 42). |
 | Le hasard de JOSS | 10 % | Le cours dit qu'elle trahit « une fois sur dix » ; je l'ai pris comme une chance sur dix. |
 
+Le nombre de tours et le nombre de parties ne sont pas figés dans le code : on peut les
+changer au lancement (`--tours` et `--parties`). Par défaut, le programme utilise 5 parties
+de 200 tours, comme Axelrod, et c'est avec ces valeurs que j'ai joué tous les tournois
+de ce journal.
+
 Quelques choix que j'ai faits en écrivant le programme :
 
 - **Une stratégie, c'est juste une règle qui regarde le passé.** Elle reçoit la liste de
@@ -112,6 +117,30 @@ ALL-D contre ALL-D: 400 / 400   200 × 2
 
 Tout correspondait. Et déjà une première chose m'a frappé : TFT perd son duel contre ALL-D,
 de 5 points seulement.
+
+**Une commande pour regarder une partie de près.** Au début, je faisais ces vérifications
+avec de petits bouts de code à part, que personne d'autre ne pouvait relancer facilement.
+En fin de projet, j'ai ajouté au programme une option `--duel`, qui fait exactement ce
+travail de base : faire jouer deux stratégies l'une contre l'autre, sans tournoi. Elle
+affiche le score de chaque partie, puis les coups de la première partie, 50 tours par
+ligne. Regarder un duel tour par tour, c'est ce qui m'a permis tout au long du travail de
+comprendre les résultats : l'engrenage de TFT contre JOSS, PAVLOV qui se fait reprendre
+par ALL-D, etc. Avec cette option, n'importe qui peut le refaire.
+
+Commande : `python3 main.py --duel TIT-FOR-TAT ALL-D --parties 1`
+
+```
+Partie 1 : TIT-FOR-TAT 398 - 403 ALL-D
+Total    : TIT-FOR-TAT 398 - 403 ALL-D
+
+Coups de la partie 1 (C = coopère, D = trahit)
+Tours   1 à  50
+  TIT-FOR-TAT  CDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+  ALL-D        DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+```
+
+On retrouve le calcul fait à la main : TFT coopère au premier tour et se fait avoir, puis
+elle copie ALL-D et les deux trahissent jusqu'à la fin.
 
 #### 2. RANDOM — commit `feat: strategie RANDOM`
 

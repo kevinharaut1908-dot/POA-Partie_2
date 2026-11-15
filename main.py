@@ -9,12 +9,14 @@ Etape 3 (bruit) :
     python3 main.py --seed 67 --etape 2 --bruit 0.05
 Etape 3 (sélection) :
     python3 main.py --seed 67 --etape 2 --generations 100 --graphique captures/selection.svg
+Une partie entre deux stratégies :
+    python3 main.py --duel TIT-FOR-TAT JOSS
 """
 
 import argparse
 import random
 
-from moteur import tournoi, classement, selection
+from moteur import tournoi, classement, selection, jouer_partie
 from graphique import ecrire_svg
 from strategies import all_d, random_strat, tit_for_tat, tester, joss, grim, pavlov, all_c
 
@@ -70,6 +72,35 @@ def afficher_selection(strategies, historique):
         print(f"{g:>4}" + "".join(f"{100 * historique[g][nom]:>{largeur}.1f}" for nom in noms))
 
 
+def lancer_duel(nom1, nom2, args):
+    # Fait jouer deux stratégies l'une contre l'autre et affiche les scores et les coups.
+    rng = random.Random(args.seed)
+    s1, s2 = POPULATION_ELARGIE[nom1], POPULATION_ELARGIE[nom2]
+    texte_bruit = f", bruit {args.bruit:.0%}" if args.bruit > 0 else ""
+    mot_partie = "partie" if args.parties == 1 else "parties"
+    print(f"Duel {nom1} contre {nom2} : {args.parties} {mot_partie} de {args.tours} tours"
+          f"{texte_bruit}, graine {args.seed}\n")
+
+    total1, total2 = 0, 0
+    for partie in range(1, args.parties + 1):
+        score1, score2, coups1, coups2 = jouer_partie(s1, s2, args.tours, rng, args.bruit, avec_coups=True)
+        total1 += score1
+        total2 += score2
+        print(f"Partie {partie} : {nom1} {score1} - {score2} {nom2}")
+        if partie == 1:
+            premiere = (coups1, coups2)
+    print(f"Total    : {nom1} {total1} - {total2} {nom2}\n")
+
+    # Coups de la première partie, 50 tours par ligne (C = coopère, D = trahit)
+    largeur = max(len(nom1), len(nom2))
+    print("Coups de la partie 1 (C = coopère, D = trahit)")
+    for debut in range(0, args.tours, 50):
+        fin = min(debut + 50, args.tours)
+        print(f"Tours {debut + 1:>3} à {fin:>3}")
+        print(f"  {nom1:<{largeur}}  {''.join(premiere[0][debut:fin])}")
+        print(f"  {nom2:<{largeur}}  {''.join(premiere[1][debut:fin])}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Tournoi du dilemme du prisonnier itéré")
     parser.add_argument("--etape", type=int, choices=[1, 2], default=1,
@@ -85,7 +116,18 @@ def main():
                         help="avec --generations : enregistre la courbe d'évolution dans ce fichier SVG")
     parser.add_argument("--contre-soi", action="store_true",
                         help="chaque stratégie affronte aussi son double")
+    parser.add_argument("--duel", nargs=2, metavar=("STRAT1", "STRAT2"),
+                        help="fait jouer une seule paire de stratégies, ex. --duel TIT-FOR-TAT JOSS. "
+                             "Noms possibles : " + ", ".join(POPULATION_ELARGIE))
     args = parser.parse_args()
+
+    if args.duel:
+        noms = [nom.upper() for nom in args.duel]
+        for nom in noms:
+            if nom not in POPULATION_ELARGIE:
+                parser.error(f"stratégie inconnue : {nom}. Noms possibles : {', '.join(POPULATION_ELARGIE)}")
+        lancer_duel(noms[0], noms[1], args)
+        return
 
     strategies = POPULATIONS[args.etape]
     rng = random.Random(args.seed)

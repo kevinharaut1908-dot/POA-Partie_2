@@ -14,7 +14,8 @@ def inverser(coup):
     return "D" if coup == "C" else "C"
 
 
-def jouer_partie(strat1, strat2, n_tours=200, rng=None, bruit=0.0):
+def jouer_partie(strat1, strat2, n_tours=200, rng=None, bruit=0.0, avec_coups=False):
+    # avec_coups=True : renvoie aussi les coups joués (pour afficher un duel)
 
     if rng is None:
         rng = random.Random()
@@ -40,6 +41,8 @@ def jouer_partie(strat1, strat2, n_tours=200, rng=None, bruit=0.0):
         coups1.append(c1)
         coups2.append(c2)
 
+    if avec_coups:
+        return score1, score2, coups1, coups2
     return score1, score2
 
 
