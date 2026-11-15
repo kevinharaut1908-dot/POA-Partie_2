@@ -29,12 +29,14 @@ Depuis la racine du dépôt :
 ```
 python3 main.py --seed 67                # Étape 1 : tournoi de base, format du cours
 python3 main.py --seed 67 --contre-soi   # Étape 1 : idem, chaque stratégie affronte aussi son double (Axelrod 1980)
+python3 main.py --seed 67 --etape 2       # Étape 2 : population élargie (8 stratégies)
 ```
 
 Options :
 
 | Option | Défaut | Rôle |
 |---|---|---|
+| `--etape` | 1 | population : 1 = stratégies du cours, 2 = population élargie |
 | `--seed` | 67 | graine aléatoire |
 | `--parties` | 5 | parties par duel |
 | `--tours` | 200 | tours par partie |
@@ -66,5 +68,13 @@ tournois reproductibles avec une seule graine.
 | TIT-FOR-TAT | C au premier tour, puis rejoue le coup de l'adversaire au tour précédent. |
 | TESTER | D au premier tour. Si l'adversaire riposte, joue TIT-FOR-TAT ; sinon répète C, C, D. |
 | JOSS | TIT-FOR-TAT, mais remplace C par D avec une probabilité de 10 %. |
+
+### Nouvelles stratégies (étape 2)
+
+| Stratégie | Règle |
+|---|---|
+| GRIM | Coopère tant que l'adversaire n'a jamais trahi ; après sa première trahison, trahit jusqu'à la fin. |
+| PAVLOV | Coopère au premier tour ; garde son coup s'il a rapporté 3 ou 5 points, en change sinon. |
+| ALL-C | Coopère toujours. |
 
 
