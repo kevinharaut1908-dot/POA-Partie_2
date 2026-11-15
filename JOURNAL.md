@@ -46,30 +46,40 @@ Quelques choix que j'ai faits en écrivant le programme :
 
 ### Celles du cours
 
-**ALL-D** trahit à chaque tour, sans exception. Elle devrait bien s'en sortir contre
+**ALL-D** trahit à chaque tour, sans exception. Elle vient de la théorie des jeux : c'est la
+stratégie « rationnelle » qu'on obtient en raisonnant à rebours depuis le dernier tour,
+comme le présente le cours. Elle devrait bien s'en sortir contre
 celles qui coopèrent sans jamais punir, comme RANDOM. Personne ne peut la battre en duel,
 mais face à quelqu'un qui riposte (TFT, TESTER, JOSS), elle tombe dans un échange de
 trahisons à 2 points par tour.
 
-**RANDOM** joue à pile ou face, sans regarder ce qui s'est passé avant. Elle n'a pas
+**RANDOM** joue à pile ou face, sans regarder ce qui s'est passé avant. Dans le tournoi
+d'Axelrod, elle servait de témoin, pour comparer les autres programmes au pur hasard. Elle n'a pas
 vraiment d'adversaire préféré : elle gagne gros seulement quand elle trahit quelqu'un qui
 coopère. Contre ALL-D, elle se fait avoir chaque fois qu'elle coopère, et elle ne punit
 jamais.
 
 **TIT-FOR-TAT (TFT)** coopère au premier tour, puis copie ce que l'adversaire a fait au
-tour d'avant. Avec une stratégie coopérative, elles coopèrent tout le match. Contre ALL-D,
+tour d'avant. Elle a été proposée par Anatol Rapoport au tournoi d'Axelrod de 1980, qu'elle
+a gagné alors que c'était le programme le plus court de tous. Avec une stratégie coopérative,
+ elles coopèrent tout le match. Contre ALL-D,
 elle perd le premier tour puis trahit comme elle. Contre celles qui trahissent par
 surprise (JOSS, TESTER), elle tombe dans un engrenage : « tu me trahis, je te le rends ».
 Une propriété m'a frappé : **TFT ne bat jamais son adversaire en duel**, au mieux elle fait
 match nul.
 
 **JOSS** joue comme TFT, mais quand elle devrait coopérer, elle trahit en douce une fois
-sur dix. Elle profite des naïfs qui ne punissent pas. Contre TFT ou contre une autre JOSS,
+sur dix. Elle porte le nom de son auteur, Johann Joss, qui l'a soumise au tournoi de 1980 :
+c'est une TFT « rusée », qui essaie de grappiller quelques points. Elle profite des naïfs qui
+ ne punissent pas. Contre TFT ou contre une autre JOSS,
 c'est le drame : une trahison lance l'engrenage, et une deuxième fait basculer tout le
 monde dans la trahison permanente.
 
 **TESTER** commence par trahir pour « tester » l'adversaire. Si l'adversaire riposte, elle
 se met à jouer comme TFT ; sinon, elle l'exploite en répétant coopérer, coopérer, trahir.
+Elle fait partie des programmes des tournois d'Axelrod présentés dans le cours ; j'ai suivi
+la définition du cours, qui diffère un peu d'autres descriptions (voir mon
+impasse plus bas).
 Elle devrait bien s'en sortir contre les naïfs. Mais contre tous ceux qui ripostent, sa
 trahison du premier tour se retourne contre elle : comme elle ne s'excuse jamais,
 l'engrenage ne s'arrête plus.
@@ -77,7 +87,10 @@ l'engrenage ne s'arrête plus.
 ### Celles que j'ai ajoutées (étape 2)
 
 **GRIM** coopère tant que l'adversaire ne l'a jamais trahie. À la première
-trahison, elle trahit jusqu'à la fin, sans jamais pardonner. Avec les gentilles, elle
+trahison, elle trahit jusqu'à la fin, sans jamais pardonner. Elle vient de la théorie des
+jeux répétés, où on l'appelle la « gâchette implacable » (*grim trigger*) : c'est la menace
+de punition la plus sévère possible. Une version de cette idée, le programme de James
+Friedman, participait déjà au tournoi de 1980. Avec les gentilles, elle
 coopère comme TFT. Contre RANDOM, elle devrait faire mieux que TFT : dès la première
 trahison, elle cesse de lui faire confiance et l'exploite. En revanche, une seule trahison
 de JOSS ou de TESTER suffit à tout gâcher. Je l'ai ajoutée parce que c'est **TFT sans le
@@ -85,6 +98,8 @@ pardon** : la comparer à TFT montre ce que pardonner rapporte, ou coûte.
 
 **PAVLOV** coopère au premier tour. Ensuite, si le tour précédent lui a rapporté beaucoup
 (3 ou 5 points), elle refait la même chose ; s'il lui a rapporté peu (0 ou 2), elle change.
+Elle a été rendue célèbre par Nowak et Sigmund en 1993, qui ont montré
+qu'elle fait mieux que TFT dans une population où les joueurs se trompent.
 Avec les gentilles, elle coopère tout le match. Son atout, c'est de savoir réparer une
 erreur avec quelqu'un qui pense comme elle : si deux PAVLOV se trahissent par accident,
 elles changent toutes les deux et repartent sur la coopération. Son point faible, c'est
@@ -92,7 +107,9 @@ ALL-D : après un tour où tout le monde trahit, elle se dit « ça ne marche pa
 à la coopération… pour se faire avoir à nouveau. Je l'ai choisie parce qu'elle pardonne,
 mais d'une façon très différente de TFT.
 
-**ALL-C** coopère toujours, quoi qu'il arrive. Avec les gentilles, tout va bien. Avec
+**ALL-C** coopère toujours, quoi qu'il arrive. C'est la stratégie la plus naïve possible,
+l'opposée d'ALL-D ; on la retrouve dans les travaux qui ont prolongé ceux d'Axelrod, comme
+exemple de coopérateur qui ne se défend jamais. Avec les gentilles, tout va bien. Avec
 toutes les autres, elle se fait exploiter, parce qu'elle ne punit jamais. Je ne l'ai pas
 ajoutée pour qu'elle gagne, mais comme une **proie** : elle permet de voir qui profite d'un
 pigeon, et comment la composition de la population change le classement.
@@ -281,6 +298,14 @@ accumulant des points avec ceux qui coopèrent avec elle.
 **ALL-D a une proie : RANDOM.** Contre RANDOM, ALL-D marque plus de points que
 contre n'importe qui d'autre. C'est ce seul duel qui lui donne l'avance : contre ceux qui
 ripostent, elle ne fait pas mieux que 2 points par tour.
+
+**Pourquoi c'est différent de 1980.** En 1980, la plupart des programmes ne trahissaient 
+jamais les premiers, et TFT avait beaucoup de partenaires avec qui coopérer. Ici, aucune 
+des quatre autres ne coopère vraiment avec elle.
+En 1980, chaque programme jouait aussi contre son double : c'est exactement ce que montre mon essai
+avec `--contre-soi`, où TFT passe première. Contre une copie d'elle-même, TFT coopère tout
+le match, alors qu'ALL-D contre ALL-D ne fait que s'échanger des trahisons. Ce seul match
+suffit à renverser le classement.
 
 **Ce que j'en retiens :** TFT n'est pas la meilleure stratégie dans l'absolu. Elle gagne
 quand elle est entourée de stratégies qui coopèrent ; dans une petite population agressive,
