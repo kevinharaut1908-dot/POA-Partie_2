@@ -63,6 +63,14 @@ chronologique ; chaque étape renvoie au commit correspondant.
 - **Devrait bien jouer contre :** les coopérateurs naïfs qui ne punissent jamais (exploités un tour sur trois).
 - **Devrait mal jouer contre :** toutes les stratégies réactives. Sa sonde du premier tour déclenche une riposte ; comme elle ne s'excuse pas, l'écho de représailles ne s'arrête jamais.
 
+### Nouvelles stratégies (étape 2)
+
+#### GRIM (rancunière, « grim trigger »)
+- **Règle :** coopère tant que l'adversaire n'a jamais trahi ; dès sa première trahison, trahit jusqu'à la fin de la partie.
+- **Devrait bien jouer contre :** les coopérateurs (coopération totale comme TFT) et RANDOM (elle l'exploite à partir de sa première trahison, contrairement à TFT qui continue à lui pardonner).
+- **Devrait mal jouer contre :** les stratégies qui trahissent une seule fois par erreur ou par sonde (JOSS, TESTER) : elle ne pardonne jamais, donc D/D jusqu'à la fin. Elle sera très fragile au bruit (étape 3).
+- **Raison de l'ajout :** c'est TFT sans pardon. La comparer à TFT montre ce que rapporte le pardon.
+
 ---
 
 ## Chronologie
@@ -200,7 +208,7 @@ duels contre RANDOM et JOSS varient de quelques dizaines de points.
 
 Commande : `python3 main.py --seed 67`
 
-<!-- CAPTURE : captures/etape1_classement.png -->
+![Classement de l'étape 1, format du cours, graine 67](captures/etape1_classement.png)
 
 ```
 Tournoi : 5 stratégies, 5 parties de 200 tours par duel, sans match contre soi-même, graine 67
@@ -234,7 +242,7 @@ score d'une des deux copies).
 
 Commande : `python3 main.py --seed 67 --contre-soi`
 
-<!-- CAPTURE : captures/etape1_contre_soi.png -->
+![Classement de l'étape 1 avec matchs contre soi-même, graine 67](captures/etape1_contre_soi.png)
 
 ```
 Tournoi : 5 stratégies, 5 parties de 200 tours par duel, avec matchs contre soi-même, graine 67
@@ -290,3 +298,32 @@ mieux le maillon faible (ALL-D contre RANDOM) l'emporte.
 
 ---
 
+
+## Étape 2 : nouvelles stratégies
+
+#### 7. GRIM — commit `feat: stratégie GRIM`
+
+Première stratégie absente du cours (fiche plus haut). Test contre chaque stratégie,
+graine 67, 16 premiers coups :
+
+```
+GRIM vs TFT    score (600, 600)   GRIM CCCCCCCCCCCCCCCC | TFT CCCCCCCCCCCCCCCC
+GRIM vs ALL-D  score (398, 403)   GRIM CDDDDDDDDDDDDDDD | ALL-D DDDDDDDDDDDDDDDD
+GRIM vs RANDOM score (678, 218)   GRIM CCDDDDDDDDDDDDDD | RANDOM CDDCDCDDCCCCCCCC
+GRIM vs TESTER score (401, 401)   GRIM CDDDDDDDDDDDDDDD | TESTER DCDDDDDDDDDDDDDD
+GRIM vs JOSS   score (401, 401)   GRIM CDDDDDDDDDDDDDDD | JOSS DCDDDDDDDDDDDDDD
+GRIM vs GRIM   score (600, 600)   GRIM CCCCCCCCCCCCCCCC | GRIM CCCCCCCCCCCCCCCC
+```
+
+Observations :
+- **Contre RANDOM, GRIM fait 678 par partie**, contre environ 500 pour TFT. Dès que RANDOM
+  trahit une fois (tour 2), GRIM passe en D définitif et récolte 5 points chaque fois que
+  RANDOM coopère. GRIM combine la gentillesse de TFT (600 contre les coopérateurs) et
+  l'exploitation de RANDOM par ALL-D.
+- **Contre TESTER et JOSS, GRIM tombe en D/D dès le début** (401) : une seule trahison
+  suffit. Ici, la partie avec JOSS a commencé par une trahison aléatoire de JOSS au
+  premier tour.
+
+Prédiction (avant de relancer le tournoi) : GRIM devrait se classer haut, peut-être
+devant ALL-D, car elle gagne presque autant qu'ALL-D contre RANDOM et beaucoup plus
+contre TFT.
