@@ -207,7 +207,7 @@ Premières observations, à approfondir avec `main.py` :
 
 ### Dimanche 15 novembre 2026
 
-#### 6. Point d'entrée `main.py` — commit `feat: main.py (graine, classement, tableau des duels, option --contre-soi)`
+#### 6. Point d'entrée `main.py` — commit `feat: main.py (graine 67, classement, tableau des duels) et option --contre-soi`
 
 `main.py` lit les options (`--seed`, `--parties`, `--tours`), crée **un seul**
 `random.Random(graine)`, lance le tournoi et affiche le classement et le tableau des duels.
@@ -573,3 +573,99 @@ erreur de plus ou de moins ne change rien. ALL-C devrait rester en bas du classe
 
 En résumé, je m'attends à : ALL-D toujours première, PAVLOV qui monte devant TFT, et GRIM
 qui descend.
+
+#### Ce qui s'est vraiment passé
+
+Côté code, le bruit a été assez simple à ajouter : une fois que chaque stratégie a choisi
+son coup, le programme tire au sort et, 5 fois sur 100, le retourne. J'ai juste fait
+attention à ne rien changer quand il n'y a pas de bruit, pour que les résultats des étapes
+1 et 2 restent les mêmes. J'ai vérifié, c'est bien le cas.
+
+Commande : `python3 main.py --etape 2 --bruit 0.05`
+
+![Classement avec 5 % de bruit, population élargie, graine 67](captures/etape3_bruit.png)
+
+```
+Classement
+------------------------------
+ 1. ALL-D            20097
+ 2. GRIM             20004
+ 3. JOSS             17045
+ 4. TIT-FOR-TAT      16749
+ 5. TESTER           16697
+ 6. PAVLOV           16090
+ 7. RANDOM           16077
+ 8. ALL-C            12008
+```
+
+Quand j'ai vu ce classement, j'ai d'abord pensé que j'étais tombé sur une mauvaise graine.
+GRIM deuxième, PAVLOV sixième : c'était presque l'inverse de ce que j'avais écrit. Alors
+j'ai relancé avec dix graines différentes. Le résultat ne bouge pas : ALL-D et GRIM restent
+en tête à chaque fois (GRIM passe même première une fois), JOSS est toujours troisième, et
+PAVLOV finit toujours dans le bas du classement. Ce n'est donc pas un accident.
+
+| | Sans bruit (étape 2) | Avec 5 % de bruit |
+|---|---|---|
+| 1 | ALL-D | ALL-D |
+| 2 | GRIM | GRIM |
+| 3 | TIT-FOR-TAT | **JOSS** |
+| 4 | TESTER | TIT-FOR-TAT |
+| 5 | PAVLOV | TESTER |
+| 6 | JOSS | **PAVLOV** |
+| 7 | RANDOM | RANDOM |
+| 8 | ALL-C | ALL-C |
+
+#### Ce que j'avais prédit, et où je me suis trompé
+
+**GRIM, c'est ma plus grosse erreur.** J'étais persuadé qu'elle allait s'effondrer, et
+c'est elle qui progresse le plus. Je n'avais vu que la moitié de l'histoire. C'est vrai
+qu'avec les stratégies gentilles, elle se fâche vite et perd la coopération. Mais une fois
+fâchée, GRIM se met à jouer exactement comme ALL-D… et dans ce tournoi, jouer comme ALL-D,
+c'est justement ce qui rapporte le plus. Le bruit lui donne en quelque sorte une excuse : il
+suffit qu'ALL-C se trompe une seule fois pour que GRIM se retourne contre elle, et ALL-C,
+qui ne se défend jamais, se fait ensuite exploiter jusqu'à la fin. Elle perd un peu avec
+ses amies, mais elle gagne beaucoup sur les plus faibles.
+
+**PAVLOV, je me suis trompé sur le résultat, mais pas sur la raison.** Je pensais qu'elle
+monterait, et elle recule. Pourtant, ce que j'avais imaginé est vrai : elle sait très bien
+réparer une erreur. Pour en avoir le cœur net, j'ai relancé le tournoi en laissant chaque
+stratégie jouer aussi contre son double (`--contre-soi`). Deux PAVLOV s'entendent bien
+mieux que deux TFT ou deux GRIM : quand l'une se trompe, elles se retrouvent toutes les
+deux à trahir, changent ensemble et repartent sur de bonnes bases. PAVLOV contre son double
+fait 2900 points, contre 2568 pour TFT et 2055 pour GRIM.
+
+Le problème, c'est que dans le tournoi normal, une stratégie ne joue jamais contre
+elle-même. PAVLOV ne rencontre donc jamais quelqu'un qui pardonne de la même façon qu'elle.
+Avec les autres, sa gentillesse se retourne contre elle. Le pire, c'est face à GRIM : une
+fois GRIM fâchée, PAVLOV revient sans arrêt vers la coopération, en espérant que ça
+reparte, et se fait punir à chaque fois. Elle s'en sort presque aussi mal que contre ALL-D.
+
+**TFT, là j'avais vu juste.** Les erreurs la font tomber dans son engrenage habituel, « tu
+me trahis, je te le rends », et elle perd une partie de la coopération qui la faisait
+vivre. Elle recule d'une place, sans s'effondrer.
+
+**ALL-D, à moitié juste.** Elle reste bien première, mais je pensais qu'elle prendrait plus
+d'avance. C'est l'inverse : GRIM revient presque à sa hauteur. Je n'avais pas vu que le
+bruit allait, en quelque sorte, fabriquer une deuxième ALL-D.
+
+**JOSS, la vraie surprise.** Je n'avais rien prévu pour elle, et elle passe de la 6e à la 3e
+place. Sans bruit, sa petite trahison surprise suffisait à la brouiller pour de bon avec
+TFT ou TESTER. Avec le bruit, tout le monde fait des erreurs, et ces brouilles finissent
+aussi par s'arranger par hasard. Son défaut, trahir de temps en temps, devient banal :
+quand tout le monde se trompe, plus personne ne la remarque vraiment. Avec GRIM, c'est
+elle qui gagne le plus de points grâce au bruit.
+
+**ALL-C, comme prévu, reste dernière**, et elle perd beaucoup : chaque erreur qu'elle fait 
+fâche GRIM.
+
+#### Ce que j'en retiens
+
+Je pensais que le bruit allait récompenser les stratégies qui pardonnent. Dans mon tournoi,
+c'est presque l'inverse : il récompense celles qui **savent être méchantes au bon moment**,
+tant qu'il reste des proies à exploiter (ALL-C, PAVLOV, RANDOM).
+PAVLOV pardonne inutilement, entouré de stratégies qui ne pardonnent pas de la même façon,
+elle ne peut pas en profiter.
+
+C'est la même leçon qu'aux étapes 1 et 2 : on ne peut pas dire qu'une stratégie
+est bonne ou mauvaise sans savoir avec qui elle joue.
+
