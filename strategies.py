@@ -46,3 +46,15 @@ def tester(mes_coups, coups_adverses, rng):
 
     # L'adversaire n'a jamais D : C, C, D en boucle
     return "D" if tour % 3 == 0 else "C"
+
+
+# ------------------------------- 2 nouvelles stratégies ajoutées -------------------------------
+
+
+
+
+def grim(mes_coups, coups_adverses, rng):
+    """GRIM : coopère tant que l'adversaire n'a jamais trahi. Si elle est trahie, trahie jus'à la fin."""
+    if "D" in coups_adverses:
+        return "D"
+    return "C"
