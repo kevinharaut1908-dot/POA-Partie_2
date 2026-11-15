@@ -24,11 +24,21 @@ le meilleur score total gagne. Une stratégie ne joue pas contre elle-même
 
 ## Lancer les tournois
 
-> `main.py` arrive à l'étape suivante. Les commandes seront :
+Depuis la racine du dépôt :
 
 ```
-python3 main.py --seed 42        # Étape 1 : tournoi de base (5 stratégies du cours)
+python3 main.py --seed 67                # Étape 1 : tournoi de base, format du cours
+python3 main.py --seed 67 --contre-soi   # Étape 1 : idem, chaque stratégie affronte aussi son double (Axelrod 1980)
 ```
+
+Options :
+
+| Option | Défaut | Rôle |
+|---|---|---|
+| `--seed` | 67 | graine aléatoire |
+| `--parties` | 5 | parties par duel |
+| `--tours` | 200 | tours par partie |
+| `--contre-soi` | désactivé | ajoute le match de chaque stratégie contre son double |
 
 La graine (`--seed`) fixe tout le hasard du tournoi : la même graine redonne
 exactement le même classement.
@@ -37,6 +47,7 @@ exactement le même classement.
 
 | Fichier | Rôle |
 |---|---|
+| `main.py` | Point d'entrée : lit les options, fixe la graine, lance le tournoi, affiche le classement et le tableau des duels. |
 | `moteur.py` | Matrice des gains, `jouer_partie` (une partie entre deux stratégies), `tournoi` (tous contre tous) et `classement`. |
 | `strategies.py` | Les stratégies. Chacune est une fonction `strategie(mes_coups, coups_adverses, rng) -> "C" ou "D"`. |
 

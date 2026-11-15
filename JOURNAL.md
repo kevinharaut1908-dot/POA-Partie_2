@@ -16,7 +16,7 @@ chronologique ; chaque étape renvoie au commit correspondant.
 | Parties par duel | 5 | Format d'Axelrod |
 | Appariement | Chaque paire de stratégies distinctes, une fois | Pas de match contre soi-même |
 | Score | Somme des points sur tous les duels | Le meilleur total gagne, pas le nombre de duels gagnés. |
-| Graine aléatoire | 42 | Un seul générateur `random.Random(graine)` sert à tout le tournoi. |
+| Graine aléatoire | 67 | Un seul générateur `random.Random(graine)` sert à tout le tournoi. Les essais des entrées 1 à 5 ont été faits avec la graine 42, avant le choix définitif (voir entrée 6). |
 | Probabilité de trahison de JOSS | 10 % | « remplace C par D une fois sur dix ». |
 
 ### Choix de conception
@@ -184,6 +184,109 @@ Premières observations, à approfondir avec `main.py` :
   n'importe qui d'autre. Contre les autres, elle plafonne vers 2000 (D/D).
 - **TFT n'a aucun partenaire coopératif** : écho permanent avec TESTER (2500), D/D avec
   JOSS (2079). Elle ne coopère pleinement avec personne.
+
+### Dimanche 15 novembre 2026
+
+#### 6. Point d'entrée `main.py` — commit `feat: main.py (graine, classement, tableau des duels, option --contre-soi)`
+
+`main.py` lit les options (`--seed`, `--parties`, `--tours`), crée **un seul**
+`random.Random(graine)`, lance le tournoi et affiche le classement et le tableau des duels.
+
+**Choix de la graine :** les essais précédents utilisaient la graine 42. J'ai choisi
+la graine **67** comme graine officielle du projet (valeur par défaut de `main.py`).
+Le choix est arbitraire : ce qui compte, c'est qu'elle soit fixée et notée. Avec 42
+comme avec 67, l'ordre du classement est identique dans les deux formats ; seuls les
+duels contre RANDOM et JOSS varient de quelques dizaines de points.
+
+Commande : `python3 main.py --seed 67`
+
+<!-- CAPTURE : captures/etape1_classement.png -->
+
+```
+Tournoi : 5 stratégies, 5 parties de 200 tours par duel, sans match contre soi-même, graine 67
+
+Classement
+------------------------------
+ 1. ALL-D             9476
+ 2. TIT-FOR-TAT       9100
+ 3. TESTER            9051
+ 4. JOSS              8716
+ 5. RANDOM            8421
+
+Points de la ligne contre la colonne
+                     ALL-D       RANDOM  TIT-FOR-TAT       TESTER         JOSS
+ALL-D                    -         3446         2015         2000         2015
+RANDOM                1036            -         2538         2517         2330
+TIT-FOR-TAT           1990         2518            -         2500         2092
+TESTER                2000         2532         2500            -         2019
+JOSS                  1990         2590         2117         2019            -
+```
+
+**Robustesse :** relancé avec les graines 1 à 10, ALL-D est **premier dans les 10 cas**.
+Seul l'ordre TIT-FOR-TAT / TESTER (2e et 3e) change selon la graine : leurs scores ne
+diffèrent que de quelques dizaines de points.
+
+**Découverte : le match contre soi-même.** En cherchant pourquoi TFT ne gagne pas, j'ai
+remarqué que le cours fait jouer le mini-tournoi sans match contre soi (CM4 p.68), alors
+que dans le tournoi d'Axelrod de 1980, chaque programme affrontait aussi son double. J'ai
+ajouté l'option `--contre-soi` pour tester les deux formats (on ne compte alors que le
+score d'une des deux copies).
+
+Commande : `python3 main.py --seed 67 --contre-soi`
+
+<!-- CAPTURE : captures/etape1_contre_soi.png -->
+
+```
+Tournoi : 5 stratégies, 5 parties de 200 tours par duel, avec matchs contre soi-même, graine 67
+
+Classement
+------------------------------
+ 1. TIT-FOR-TAT      12083
+ 2. ALL-D            11476
+ 3. TESTER           11037
+ 4. RANDOM           10937
+ 5. JOSS             10754
+
+Points de la ligne contre la colonne
+                     ALL-D       RANDOM  TIT-FOR-TAT       TESTER         JOSS
+ALL-D                 2000         3446         2015         2000         2015
+RANDOM                1036         2521         2508         2494         2378
+TIT-FOR-TAT           1990         2493         3000         2500         2100
+TESTER                2000         2504         2500         2000         2033
+JOSS                  1990         2553         2125         2033         2053
+```
+
+Avec les graines 1 à 10 : TIT-FOR-TAT est **premier dans les 10 cas**.
+
+#### Question de l'étape 1 : TIT-FOR-TAT gagne-t-il ?
+
+**Non, pas au format du cours** : ALL-D gagne (9476 contre 9100 pour TFT, graine 67),
+et c'est le cas avec toutes les graines testées. Le résultat diffère de 1980 pour trois raisons.
+
+**1. TFT n'a personne avec qui coopérer.** TFT ne gagne jamais un duel : elle prospère
+seulement en coopérant à 3 points par tour avec d'autres stratégies coopératives
+(CM4 p.69). En 1980, une grande partie des programmes étaient « gentils » (ne trahissent
+jamais en premier). Ici, aucune des quatre autres stratégies ne lui permet de coopérer
+durablement :
+- ALL-D trahit toujours ;
+- RANDOM trahit une fois sur deux ;
+- TESTER trahit au premier tour et ne s'excuse jamais : écho C/D pendant 200 tours (500 par partie au lieu de 600) ;
+- JOSS trahit par surprise : écho, puis D/D permanent.
+
+**2. ALL-D a une proie : RANDOM.** ALL-D marque 3446 contre RANDOM, soit environ 1400 points
+de plus que contre n'importe quelle autre stratégie. C'est ce seul duel qui lui donne
+l'avance. Contre les stratégies qui ripostent, elle plafonne à environ 2000 (D/D).
+
+**3. Le format compte : sans match contre soi, TFT perd sa meilleure rencontre.** Contre
+son double, TFT coopère pendant 200 tours (3000 points sur 5 parties), alors qu'ALL-D
+contre son double ne fait que 2000. Ce seul match rapporte 1000 points d'écart en faveur
+de TFT, assez pour renverser le classement (12083 contre 11476). Le double de TFT est le
+« partenaire qui pense comme elle » qui lui manquait dans la population du cours.
+
+**Conclusion :** le succès de TFT dépend de la population. Elle gagne dès qu'elle
+rencontre assez de stratégies coopératives, ne serait-ce que son propre double ; dans une
+petite population de stratégies agressives ou bruitées, la stratégie qui exploite le
+mieux le maillon faible (ALL-D contre RANDOM) l'emporte.
 
 ---
 
