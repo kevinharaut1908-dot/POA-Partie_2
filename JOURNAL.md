@@ -404,7 +404,7 @@ rester en tête malgré l'arrivée de GRIM et PAVLOV.
 
 Commande : `python3 main.py --etape 2`
 
-<!-- CAPTURE : captures/etape2_classement.png -->
+![Classement de l'étape 2, population élargie, graine 67](captures/etape2_classement.png)
 
 ```
 Étape 2 — Tournoi : 8 stratégies, 5 parties de 200 tours par duel, sans match contre soi-même, graine 67
@@ -504,3 +504,72 @@ de la population. Ajouter des stratégies gentilles (GRIM, PAVLOV) aide TFT, mai
 une proie (ALL-C) aide encore plus ALL-D. Les stratégies qui gagnent sont celles qui
 **punissent** (GRIM, TFT, ALL-D) ; celles qui ne punissent pas ou mal (ALL-C, PAVLOV
 contre ALL-D, RANDOM) nourrissent les autres.
+
+---
+
+## Étape 3 : modifier le tournoi
+
+### Ce que j'ai choisi de tester, et pourquoi
+
+En regardant les résultats des étapes 1 et 2, deux choses m'ont marqué.
+
+D'abord, presque tout se joue au moment où quelqu'un trahit. TFT perd des points contre
+JOSS et TESTER parce qu'elle rend coup pour coup et ne sort plus de l'engrenage. GRIM ne
+pardonne jamais. PAVLOV, elle, a une façon bien à elle de se rattraper. Je me suis donc
+demandé : que se passe-t-il si les joueurs se trompent ? C'est ce que permet le
+**bruit** : de temps en temps, un coup part à l'envers. C'est une bonne façon de vérifier
+ce que dit le cours, qu'il vaut mieux savoir pardonner.
+
+Ensuite, j'ai vu qu'ALL-D gagne surtout parce qu'elle a des proies (ALL-C, RANDOM, PAVLOV).
+Quand j'ai retiré ALL-C, elle est tombée à la 3e place. D'où l'idée de la **sélection** :
+si les stratégies qui gagnent se multiplient et celles qui perdent disparaissent, ALL-D
+finira par manquer de victimes.
+
+J'ai laissé de côté l'horizon inconnu, parce qu'aucune de mes stratégies ne regarde à quel
+tour on en est : je m'attends à ce que ça ne change presque rien. Et je n'ai pas changé la
+matrice des gains, pour pouvoir comparer directement avec ce que j'ai déjà obtenu.
+
+### Modification 1 : le bruit
+
+#### Comment je vais m'y prendre
+
+Je garde exactement le tournoi de l'étape 2 (les 8 stratégies, la graine 67, 5 parties de
+200 tours), pour que la seule différence soit le bruit.
+
+À chaque tour, chaque joueur a 5 % de chances que son coup soit inversé : il voulait
+coopérer et il trahit, ou l'inverse. C'est la valeur proposée dans le sujet. Le point
+important, c'est que **personne ne sait qu'il y a eu une erreur**. L'adversaire voit
+simplement une trahison, et il réagit comme si elle était voulue.
+
+5 %, ça paraît peu, mais sur 200 tours, ça fait en moyenne une dizaine d'erreurs par joueur
+et par partie.
+
+#### Ce que je pense qu'il va se passer (écrit avant de coder)
+
+**GRIM, à mon avis, va tomber.** Elle ne pardonne jamais : dès que l'adversaire
+trahit, même par erreur, elle trahit jusqu'à la fin. Ses propres erreurs ne la déclenchent
+pas directement, puisqu'elle ne regarde que les coups de l'autre. Mais l'autre, lui, voit
+une trahison et répond souvent par une trahison : c'est cette réponse qui fait basculer
+GRIM. Seul un adversaire qui ne réagit jamais, comme ALL-C, lui pardonne ses erreurs. Et comme les erreurs arrivent
+vite, même deux stratégies gentilles qui jouent ensemble ne devraient coopérer qu'une
+dizaine de tours avant que tout parte en vrille. Elle était 2e à l'étape 2 ; je la vois
+passer dans la seconde moitié du classement.
+
+**TFT devrait souffrir aussi, mais moins.** Une erreur la lance dans le même engrenage
+qu'avec JOSS : je trahis, tu me le rends, je te le rends… Mais une deuxième erreur peut
+aussi bien la faire sortir de cet engrenage. Elle devrait rester au milieu.
+
+**PAVLOV devrait être la grande gagnante parmi les gentilles.** Quand deux PAVLOV se
+trompent, elles se retrouvent toutes les deux à trahir, se disent « ça ne marche pas »,
+changent en même temps et recommencent à coopérer. En deux tours, c'est réparé. Je pense
+qu'elle va passer devant TFT.
+
+**ALL-D devrait rester en tête.** Elle n'a jamais coopéré avec
+personne, donc elle n'a rien à perdre. Pendant ce temps, les autres vont perdre une partie
+de la coopération qui les faisait gagner.
+
+**RANDOM et ALL-C ne devraient presque pas bouger.** RANDOM joue déjà au hasard, une
+erreur de plus ou de moins ne change rien. ALL-C devrait rester en bas du classement.
+
+En résumé, je m'attends à : ALL-D toujours première, PAVLOV qui monte devant TFT, et GRIM
+qui descend.
