@@ -7,12 +7,15 @@ Etape 2 :
     python3 main.py --seed 67 --etape 2
 Etape 3 (bruit) :
     python3 main.py --seed 67 --etape 2 --bruit 0.05
+Etape 3 (sélection) :
+    python3 main.py --seed 67 --etape 2 --generations 100 --graphique captures/selection.svg
 """
 
 import argparse
 import random
 
-from moteur import tournoi, classement
+from moteur import tournoi, classement, selection
+from graphique import ecrire_svg
 from strategies import all_d, random_strat, tit_for_tat, tester, joss, grim, pavlov, all_c
 
 # Les 5 stratégies 
@@ -57,6 +60,19 @@ def afficher_duels(strategies, duels):
         print(f"{nom1:<{largeur}}" + "".join(cases))
 
 
+def afficher_selection(strategies, historique):
+    """Affiche la part de chaque stratégie (en %) à quelques générations choisies."""
+    noms = list(strategies)
+    dernieres = len(historique) - 1
+    a_afficher = [g for g in range(dernieres + 1)
+                  if g <= 5 or g % 10 == 0 or g == dernieres]
+    largeur = 9
+    print("Évolution de la population (part de chaque stratégie, en %)")
+    print("Gén." + "".join(f"{nom[:largeur - 1]:>{largeur}}" for nom in noms))
+    for g in a_afficher:
+        print(f"{g:>4}" + "".join(f"{100 * historique[g][nom]:>{largeur}.1f}" for nom in noms))
+
+
 def main():
     parser = argparse.ArgumentParser(description="Tournoi du dilemme du prisonnier itéré")
     parser.add_argument("--etape", type=int, choices=[1, 2], default=1,
@@ -66,6 +82,10 @@ def main():
     parser.add_argument("--tours", type=int, default=200, help="tours par partie (défaut : 200)")
     parser.add_argument("--bruit", type=float, default=0.0,
                         help="probabilité qu'un coup soit inversé par erreur")
+    parser.add_argument("--generations", type=int, default=0,
+                        help="nombre de générations de sélection après le tournoi (défaut : 0, pas de sélection)")
+    parser.add_argument("--graphique", metavar="FICHIER.svg",
+                        help="avec --generations : enregistre la courbe d'évolution dans ce fichier SVG")
     parser.add_argument("--contre-soi", action="store_true",
                         help="chaque stratégie affronte aussi son double (comme Axelrod 1980)")
     args = parser.parse_args()
@@ -83,6 +103,15 @@ def main():
     afficher_classement(scores)
     print()
     afficher_duels(strategies, duels)
+
+    if args.generations > 0:
+        print()
+        historique = selection(strategies, duels, args.generations, args.contre_soi)
+        afficher_selection(strategies, historique)
+        if args.graphique:
+            ecrire_svg(historique, args.graphique,
+                       f"Sélection sur {args.generations} générations (graine {args.seed}{texte_bruit})")
+            print(f"\nGraphique enregistré dans {args.graphique}")
 
 
 if __name__ == "__main__":

@@ -114,3 +114,42 @@ def tournoi(strategies, n_parties=5, n_tours=200, rng=None, contre_soi=False, br
 def classement(scores):
     """Renvoie la liste [(nom, score), ...] triée du meilleur au moins bon."""
     return sorted(scores.items(), key=lambda item: item[1], reverse=True)
+
+
+def selection(strategies, duels, n_generations=100, contre_soi=False):
+    """Fait évoluer la population sur plusieurs générations (dynamique du réplicateur).
+
+    duels : résultats d'un tournoi, {(nom1, nom2): points de nom1 contre nom2}.
+    Ces résultats ne changent pas : ce qui change d'une génération à l'autre,
+    c'est la part de chaque stratégie dans la population.
+
+    À chaque génération :
+    - le score d'une stratégie est la moyenne de ses points contre les autres,
+      pondérée par leur part dans la population (sans sa propre espèce,
+      sauf si contre_soi=True) ;
+    - sa nouvelle part est proportionnelle à : part actuelle × score.
+
+    Renvoie la liste des populations, de la génération 0 à n_generations :
+    [{nom: part}, ...], où chaque part est entre 0 et 1.
+    """
+    noms = list(strategies)
+    parts = {nom: 1 / len(noms) for nom in noms}  # au départ, toutes à égalité
+    historique = [dict(parts)]
+
+    for _ in range(n_generations):
+        scores = {}
+        for nom in noms:
+            adversaires = [autre for autre in noms if autre != nom or contre_soi]
+            poids_total = sum(parts[autre] for autre in adversaires)
+            if poids_total == 0:
+                scores[nom] = 0
+                continue
+            points = sum(parts[autre] * duels[(nom, autre)] for autre in adversaires)
+            scores[nom] = points / poids_total
+
+        # Score moyen de la population : sert à remettre le total des parts à 1
+        moyenne = sum(parts[nom] * scores[nom] for nom in noms)
+        parts = {nom: parts[nom] * scores[nom] / moyenne for nom in noms}
+        historique.append(dict(parts))
+
+    return historique

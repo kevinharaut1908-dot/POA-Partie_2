@@ -31,6 +31,7 @@ python3 main.py --seed 67                # Étape 1 : tournoi de base, format du
 python3 main.py --seed 67 --contre-soi   # Étape 1 : idem, chaque stratégie affronte aussi son double (Axelrod 1980)
 python3 main.py --seed 67 --etape 2       # Étape 2 : population élargie (8 stratégies)
 python3 main.py --seed 67 --etape 2 --bruit 0.05   # Étape 3 : population élargie avec 5 % de bruit
+python3 main.py --seed 67 --etape 2 --generations 100 --graphique captures/selection.svg   # Étape 3 : sélection sur 100 générations
 ```
 
 Options :
@@ -42,6 +43,8 @@ Options :
 | `--parties` | 5 | parties par duel |
 | `--tours` | 200 | tours par partie |
 | `--bruit` | 0 | probabilité qu'un coup soit inversé par erreur (ex. 0.05 = 5 %) |
+| `--generations` | 0 | nombre de générations de sélection après le tournoi (0 = pas de sélection) |
+| `--graphique` | aucun | avec `--generations`, enregistre la courbe d'évolution dans un fichier SVG |
 | `--contre-soi` | désactivé | ajoute le match de chaque stratégie contre son double |
 
 La graine (`--seed`) fixe tout le hasard du tournoi : la même graine redonne
@@ -52,7 +55,8 @@ exactement le même classement.
 | Fichier | Rôle |
 |---|---|
 | `main.py` | Point d'entrée : lit les options, fixe la graine, lance le tournoi, affiche le classement et le tableau des duels. |
-| `moteur.py` | Matrice des gains, `jouer_partie` (une partie entre deux stratégies), `tournoi` (tous contre tous) et `classement`. |
+| `graphique.py` | Dessine la courbe d'évolution de la sélection dans un fichier SVG (sans bibliothèque). |
+| `moteur.py` | Matrice des gains, `jouer_partie` (une partie entre deux stratégies), `tournoi` (tous contre tous), `classement`, le bruit et `selection` (évolution de la population). |
 | `strategies.py` | Les stratégies. Chacune est une fonction `strategie(mes_coups, coups_adverses, rng) -> "C" ou "D"`. |
 
 Une stratégie ne garde aucun état caché : elle déduit tout de l'historique des coups.
