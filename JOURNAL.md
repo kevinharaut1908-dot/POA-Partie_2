@@ -77,6 +77,12 @@ chronologique ; chaque étape renvoie au commit correspondant.
 - **Devrait mal jouer contre :** ALL-D. Après un D/D (2 points, « perdu »), elle repasse à C et se fait reprendre : elle alterne C et D, soit 1 point par tour en moyenne, deux fois moins que TFT.
 - **Raison de l'ajout :** une stratégie qui pardonne, mais d'une façon différente de TFT.
 
+#### ALL-C
+- **Règle :** coopère à tous les tours, quoi que fasse l'adversaire.
+- **Devrait bien jouer contre :** les stratégies gentilles (TFT, GRIM, PAVLOV, elle-même) : coopération totale, 600 par partie.
+- **Devrait mal jouer contre :** toutes celles qui trahissent, car elle ne punit jamais : ALL-D (0 point), RANDOM, TESTER (seule à subir le motif C, C, D) et JOSS.
+- **Raison de l'ajout :** Elle sert à voir quelles stratégies profitent d'un pigeon, et donc comment la composition de la population change le classement.
+
 ---
 
 ## Chronologie
@@ -363,3 +369,30 @@ Observations :
 Prédiction (avant de relancer le tournoi) : sans bruit, PAVLOV devrait se classer **en
 dessous de TFT**, à cause de la perte face à ALL-D (environ 1000 points de moins sur 5 parties).
 Son avantage ne devrait apparaître qu'avec le bruit (étape 3).
+
+#### 9. ALL-C — commit `feat: stratégie ALL-C`
+
+Test contre chaque stratégie, graine 67, 12 premiers coups :
+
+```
+ALL-C vs ALL-D  score (0, 1000)    ALL-C CCCCCCCCCCCC | ALL-D DDDDDDDDDDDD
+ALL-C vs RANDOM score (282, 812)   ALL-C CCCCCCCCCCCC | RANDOM CDDCDCDDCCCC
+ALL-C vs TFT    score (600, 600)   ALL-C CCCCCCCCCCCC | TFT CCCCCCCCCCCC
+ALL-C vs TESTER score (399, 734)   ALL-C CCCCCCCCCCCC | TESTER DCCDCCDCCDCC
+ALL-C vs JOSS   score (516, 656)   ALL-C CCCCCCCCCCCC | JOSS DCCCCCCCCDCD
+ALL-C vs GRIM   score (600, 600)   ALL-C CCCCCCCCCCCC | GRIM CCCCCCCCCCCC
+ALL-C vs PAVLOV score (600, 600)   ALL-C CCCCCCCCCCCC | PAVLOV CCCCCCCCCCCC
+ALL-C vs ALL-C  score (600, 600)   ALL-C CCCCCCCCCCCC | ALL-C CCCCCCCCCCCC
+```
+
+Observations :
+- **Qui profite du pigeon ?** Uniquement les stratégies qui trahissent : ALL-D (1000 par
+  partie, contre 400 contre elle-même), RANDOM (812), TESTER (734) et JOSS (656). Les
+  gentilles (TFT, GRIM, PAVLOV) font 600, exactement comme contre n'importe quelle gentille :
+  elles ne gagnent rien de plus avec un pigeon.
+- **TESTER sort enfin sa branche d'exploitation** (motif C, C, D) : avec la population du
+  cours, elle ne se déclenchait jamais, puisque tout le monde ripostait.
+
+Prédiction (avant de relancer le tournoi) : ALL-C sera dernière. Elle devrait surtout
+**profiter à ALL-D** (+1000 par partie, soit +5000 sur 5 parties), qui pourrait ainsi
+rester en tête malgré l'arrivée de GRIM et PAVLOV.

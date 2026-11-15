@@ -48,7 +48,7 @@ def tester(mes_coups, coups_adverses, rng):
     return "D" if tour % 3 == 0 else "C"
 
 
-# ------------------------------- 2 nouvelles stratégies ajoutées -------------------------------
+# ------------------------------- 3 nouvelles stratégies ajoutées -------------------------------
 
 
 
@@ -71,4 +71,8 @@ def pavlov(mes_coups, coups_adverses, rng):
         return mon_dernier
     if mon_dernier == "C":
         return "D"
+    return "C"
+
+def all_c(mes_coups, coups_adverses, rng):
+    """ALL-C : coopère toujours, quoi que fasse l'adversaire."""
     return "C"
