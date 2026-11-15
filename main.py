@@ -4,7 +4,9 @@ Etape 1 :
     python3 main.py --seed 67                
     python3 main.py --seed 67 --contre-soi   
 Etape 2 :
-    python3 main.py --seed 67 --etape 2     
+    python3 main.py --seed 67 --etape 2
+Etape 3 (bruit) :
+    python3 main.py --seed 67 --etape 2 --bruit 0.05
 """
 
 import argparse
@@ -62,6 +64,8 @@ def main():
     parser.add_argument("--seed", type=int, default=67, help="graine aléatoire (défaut : 67)")
     parser.add_argument("--parties", type=int, default=5, help="parties par duel (défaut : 5)")
     parser.add_argument("--tours", type=int, default=200, help="tours par partie (défaut : 200)")
+    parser.add_argument("--bruit", type=float, default=0.0,
+                        help="probabilité qu'un coup soit inversé par erreur")
     parser.add_argument("--contre-soi", action="store_true",
                         help="chaque stratégie affronte aussi son double (comme Axelrod 1980)")
     args = parser.parse_args()
@@ -70,10 +74,11 @@ def main():
     rng = random.Random(args.seed)
 
     format_tournoi = "avec matchs contre soi-même" if args.contre_soi else "sans match contre soi-même"
+    texte_bruit = f", bruit {args.bruit:.0%}" if args.bruit > 0 else ""
     print(f"Étape {args.etape} — Tournoi : {len(strategies)} stratégies, {args.parties} parties de "
-          f"{args.tours} tours par duel, {format_tournoi}, graine {args.seed}\n")
+          f"{args.tours} tours par duel, {format_tournoi}{texte_bruit}, graine {args.seed}\n")
 
-    scores, duels = tournoi(strategies, args.parties, args.tours, rng, args.contre_soi)
+    scores, duels = tournoi(strategies, args.parties, args.tours, rng, args.contre_soi, args.bruit)
 
     afficher_classement(scores)
     print()

@@ -30,6 +30,7 @@ Depuis la racine du dépôt :
 python3 main.py --seed 67                # Étape 1 : tournoi de base, format du cours
 python3 main.py --seed 67 --contre-soi   # Étape 1 : idem, chaque stratégie affronte aussi son double (Axelrod 1980)
 python3 main.py --seed 67 --etape 2       # Étape 2 : population élargie (8 stratégies)
+python3 main.py --seed 67 --etape 2 --bruit 0.05   # Étape 3 : population élargie avec 5 % de bruit
 ```
 
 Options :
@@ -40,6 +41,7 @@ Options :
 | `--seed` | 67 | graine aléatoire |
 | `--parties` | 5 | parties par duel |
 | `--tours` | 200 | tours par partie |
+| `--bruit` | 0 | probabilité qu'un coup soit inversé par erreur (ex. 0.05 = 5 %) |
 | `--contre-soi` | désactivé | ajoute le match de chaque stratégie contre son double |
 
 La graine (`--seed`) fixe tout le hasard du tournoi : la même graine redonne

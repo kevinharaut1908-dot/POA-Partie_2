@@ -19,8 +19,17 @@ GAINS = {
 }
 
 
-def jouer_partie(strat1, strat2, n_tours=200, rng=None):
+def inverser(coup):
+    """Renvoie le coup opposé : C devient D, D devient C."""
+    return "D" if coup == "C" else "C"
+
+
+def jouer_partie(strat1, strat2, n_tours=200, rng=None, bruit=0.0):
     """Fait jouer une partie de n_tours entre deux stratégies.
+
+    bruit : probabilité qu'un coup soit inversé par erreur (0.05 = 5 %).
+    C'est le coup réellement joué (après erreur éventuelle) qui compte
+    pour les gains et qui entre dans l'historique.
 
     Renvoie (score1, score2).
     """
@@ -36,6 +45,14 @@ def jouer_partie(strat1, strat2, n_tours=200, rng=None):
         c1 = strat1(coups1, coups2, rng)
         c2 = strat2(coups2, coups1, rng)
 
+        # Bruit : chaque coup peut être inversé.
+        # (Si bruit == 0, on ne tire rien : les résultats des étapes 1 et 2 restent identiques.)
+        if bruit > 0:
+            if rng.random() < bruit:
+                c1 = inverser(c1)
+            if rng.random() < bruit:
+                c2 = inverser(c2)
+
         g1, g2 = GAINS[(c1, c2)]
         score1 += g1
         score2 += g2
@@ -46,7 +63,7 @@ def jouer_partie(strat1, strat2, n_tours=200, rng=None):
     return score1, score2
 
 
-def tournoi(strategies, n_parties=5, n_tours=200, rng=None, contre_soi=False):
+def tournoi(strategies, n_parties=5, n_tours=200, rng=None, contre_soi=False, bruit=0.0):
     """Tournoi tous contre tous au format d'Axelrod.
 
     strategies : dictionnaire {nom: fonction de stratégie}
@@ -76,7 +93,7 @@ def tournoi(strategies, n_parties=5, n_tours=200, rng=None, contre_soi=False):
     for (nom1, s1), (nom2, s2) in paires:
         total1, total2 = 0, 0
         for _ in range(n_parties):
-            score1, score2 = jouer_partie(s1, s2, n_tours, rng)
+            score1, score2 = jouer_partie(s1, s2, n_tours, rng, bruit)
             total1 += score1
             total2 += score2
 
