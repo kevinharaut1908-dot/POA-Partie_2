@@ -20,7 +20,7 @@ règles le plus fidèlement possible, pour pouvoir comparer mes résultats aux s
 | Parties par duel | 5 | Comme Axelrod. Jouer plusieurs fois permet d'atténuer la chance pour les stratégies qui jouent au hasard. |
 | Qui joue contre qui | Chaque stratégie affronte chacune des autres | Comme le mini-tournoi du cours, sans match contre soi-même. |
 | Qui gagne | Celle qui a le plus de points au total | Ce n'est pas le nombre de duels gagnés qui compte, mais la somme des points. |
-| La graine | 67 | Pour que les résultats soient exactement les mêmes à chaque lancement (mes tout premiers essais utilisaient 42, voir plus bas). |
+| La graine | 67 | Pour que les résultats soient exactement les mêmes à chaque lancement (mes tout premiers essais utilisaient 42). |
 | Le hasard de JOSS | 10 % | Le cours dit qu'elle trahit « une fois sur dix » ; je l'ai pris comme une chance sur dix. |
 
 Quelques choix que j'ai faits en écrivant le programme :
@@ -223,8 +223,7 @@ différentes. ALL-D gagne à chaque fois. Seules TFT et TESTER s'échangent parf
 la 3e place, à quelques dizaines de points près.
 
 **Une piste en cherchant pourquoi TFT perd.** Dans le cours, le mini-tournoi se joue sans
-match contre soi-même. Mais en 1980, chaque programme d'Axelrod affrontait aussi son propre
-double. J'ai ajouté une option `--contre-soi` pour voir si ça changeait quelque chose.
+match contre soi-même. J'ai ajouté une option `--contre-soi` pour voir si ça changeait quelque chose.
 
 Commande : `python3 main.py --seed 67 --contre-soi`
 
@@ -245,23 +244,14 @@ Classement
 #### La question de l'étape 1 : TIT-FOR-TAT gagne-t-il ?
 
 **Non, pas dans mon tournoi.** ALL-D gagne (9476 points contre 9100 pour TFT), et c'est le
-cas avec toutes les graines que j'ai essayées. Je vois trois raisons à l'écart avec 1980.
+cas avec toutes les graines que j'ai essayées.
 
 **TFT n'a personne avec qui coopérer.** TFT ne gagne jamais un duel : elle gagne en
-accumulant des points avec ceux qui coopèrent avec elle. En 1980, beaucoup de programmes
-étaient « gentils », ils ne trahissaient jamais les premiers. Ici, aucune des quatre autres
-ne lui offre une vraie coopération : ALL-D trahit tout le temps, RANDOM une fois sur deux,
-TESTER commence par trahir et ne s'excuse jamais, et JOSS finit toujours par tout gâcher
-avec ses trahisons surprises.
+accumulant des points avec ceux qui coopèrent avec elle.
 
-**ALL-D a une proie : RANDOM.** Contre RANDOM, ALL-D marque environ 1400 points de plus que
+**ALL-D a une proie : RANDOM.** Contre RANDOM, ALL-D marque plus de points que
 contre n'importe qui d'autre. C'est ce seul duel qui lui donne l'avance : contre ceux qui
 ripostent, elle ne fait pas mieux que 2 points par tour.
-
-**En 1980, TFT pouvait compter sur son double.** Contre une copie d'elle-même, TFT coopère
-tout le match et marque 3000 points, alors qu'ALL-D contre ALL-D n'en marque que 2000. Ce
-seul match suffit à renverser le classement. Son double, c'est le partenaire « qui pense
-comme elle » qui lui manquait.
 
 **Ce que j'en retiens :** TFT n'est pas la meilleure stratégie dans l'absolu. Elle gagne
 quand elle est entourée de stratégies qui coopèrent ; dans une petite population agressive,
@@ -273,7 +263,7 @@ c'est celle qui exploite le mieux le plus faible qui l'emporte.
 
 #### 7. GRIM — commit `feat: stratégie GRIM`
 
-J'ai commencé par GRIM, la rancunière. En la faisant jouer contre chacune des autres, deux
+J'ai commencé par GRIM. En la faisant jouer contre chacune des autres, deux
 choses ressortent. Contre RANDOM, elle marque 678 points par partie, bien plus que TFT
 (environ 500) : dès que RANDOM trahit une fois, GRIM arrête de lui faire confiance et
 l'exploite jusqu'au bout. Mais contre TESTER et JOSS, une seule trahison au début suffit,
@@ -616,3 +606,85 @@ RANDOM, contrairement à TFT). Mais une fois entre gentilles, elles font toutes 
 score, donc la population devrait se figer.
 
 
+
+#### Ce qui s'est vraiment passé
+
+Pour la sélection, j'ai réutilisé le tournoi tel quel : je le fais jouer une fois, je garde
+les points de chaque duel, puis je fais évoluer les parts de la population génération
+après génération.
+
+Commande : `python3 main.py --etape 2 --generations 100 --graphique captures/selection.svg`
+
+![Évolution de la population sur 100 générations, graine 67](captures/selection.svg)
+
+![Sortie du programme : tournoi puis évolution de la population, graine 67](captures/etape3_selection.png)
+
+```
+Évolution de la population (part de chaque stratégie, en %)
+Gén.    ALL-D   RANDOM TIT-FOR-   TESTER     JOSS     GRIM   PAVLOV    ALL-C
+   0     12.5     12.5     12.5     12.5     12.5     12.5     12.5     12.5
+   5     22.7      6.5     16.0     11.0      9.2     17.4     11.0      6.1
+  10     28.5      2.0     21.2      8.6      6.0     22.4      8.8      2.6
+  20     12.8      0.1     38.0      3.4      1.5     35.4      8.0      0.9
+  30      1.0      0.0     46.3      0.4      0.1     42.2      9.1      0.9
+  40      0.0      0.0     47.0      0.0      0.0     42.8      9.2      0.9
+ 100      0.0      0.0     47.1      0.0      0.0     42.8      9.2      0.9
+```
+
+L'histoire se lit très bien sur la courbe. Pendant les dix premières générations, ALL-D
+s'envole : elle passe de 12,5 % à presque 30 % de la population, en se nourrissant de ses
+proies. Puis, au moment où RANDOM et ALL-C deviennent rares, elle s'effondre aussi vite
+qu'elle est montée. Vers la génération 30, elle a presque disparu. Pendant ce temps, TFT et
+GRIM montent régulièrement, se croisent, et finissent par se partager la population.
+À partir de la génération 40, plus rien ne bouge.
+
+J'ai relancé avec d'autres graines : l'histoire est exactement la même à chaque fois.
+
+#### Ce que j'avais prédit, et où je me suis trompé
+
+**ALL-D qui monte puis disparaît : c'est exactement ce qui s'est passé**, et c'est le
+résultat dont je suis le plus content. Il montre bien ce qu'on soupçonnait depuis l'étape
+2 : ALL-D ne gagne pas parce qu'elle est forte, mais parce qu'elle a des victimes. Quand
+les victimes disparaissent, elle ne rencontre plus que des stratégies qui lui rendent ses
+trahisons, et elle ne tient plus face à celles qui coopèrent entre elles.
+
+**RANDOM disparaît bien parmi les premières**, comme prévu.
+
+**ALL-C, en revanche, ne disparaît pas complètement**, et je ne l'avais pas vu venir. Elle
+chute très vite au début, mais il en reste un peu moins de 1 % jusqu'au bout. En y
+réfléchissant, c'est logique : une fois qu'ALL-D, RANDOM, TESTER et JOSS ont disparu,
+plus personne n'est là pour l'exploiter. Au milieu des gentilles, elle coopère comme tout
+le monde et marque autant qu'elles. Elle ne gagne plus de terrain, mais elle n'en perd
+plus non plus.
+
+**PAVLOV, j'avais vu juste.** Elle souffre tant qu'ALL-D est nombreuse (elle descend
+jusqu'à environ 8 %), puis remonte un peu et se stabilise autour de 9 % une fois ALL-D
+partie.
+
+**JOSS et TESTER déclinent bien, mais plus vite et plus complètement que je le pensais.**
+J'avais écrit « lentement » ; en fait, elles ont totalement disparu vers la génération 40.
+Leurs petites trahisons les empêchent de profiter du monde de gentilles qui se met en place.
+
+**Le monde final est bien un monde de gentilles, mais c'est TFT qui le mène, pas GRIM.**
+C'est mon erreur principale. J'avais raisonné sur l'avantage de GRIM contre RANDOM, mais
+RANDOM disparaît très vite : dès la génération 10, il n'en reste que 2 %. L'avantage de
+GRIM s'évapore donc presque tout de suite. Par contre, TESTER reste présente plus
+longtemps, et c'est là que TFT fait la différence : contre TESTER, TFT tombe dans
+l'engrenage où l'on alterne les trahisons, ce qui rapporte quand même 2,5 points par tour,
+alors que GRIM, elle, se met à trahir pour de bon et n'en marque que 2. Ce petit écart,
+répété pendant les générations où TESTER est encore là, suffit pour que TFT passe devant.
+
+**La population se fige, comme prévu.** Une fois que seules les gentilles restent, elles
+coopèrent toutes entre elles et marquent exactement le même score. Plus personne n'a
+d'avantage sur personne, donc les parts ne bougent plus.
+
+#### Ce que j'en retiens
+
+Dans un tournoi où chacun ne joue qu'une fois, ALL-D peut
+gagner en exploitant les plus faibles. Mais si on laisse le temps faire son œuvre, ce
+succès détruit ce dont elle se nourrit, et elle disparaît. Les stratégies qui coopèrent,
+elles, se renforcent mutuellement et finissent par occuper toute la place.
+
+C'est finalement TIT-FOR-TAT qui l'emporte. Cela rejoint ce que dit le cours : TFT ne
+prospère que s'il y a assez de stratégies « qui pensent comme elle » ; la sélection est
+justement ce qui finit par les lui donner.
