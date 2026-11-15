@@ -98,7 +98,7 @@ pigeon, et comment la composition de la population change le classement.
 
 ### Vendredi 13 novembre 2026, pendant la séance
 
-#### 1. La première partie — commit `feat: moteur de partie et matrice des gains (ALL-D, TFT)`
+#### 1. La première partie — commit `feat: Moteur de partie et matrice de gains -Ajout de 2 strategies: ALL-D et TIT-FOR-TAT`
 
 J'ai commencé par le plus simple : faire jouer une partie entre deux stratégies. Pour la
 tester, je n'avais besoin que de deux règles très simples, ALL-D et TFT. J'ai vérifié les
@@ -113,7 +113,7 @@ ALL-D contre ALL-D: 400 / 400   200 × 2
 Tout correspondait. Et déjà une première chose m'a frappé : TFT perd son duel contre ALL-D,
 de 5 points seulement.
 
-#### 2. RANDOM — commit `feat: stratégie RANDOM`
+#### 2. RANDOM — commit `feat: strategie RANDOM`
 
 Avec RANDOM, le hasard entre en jeu, et donc la question de la graine. J'ai vérifié deux
 choses : qu'avec la même graine, on obtient exactement la même partie, et qu'avec une
@@ -130,7 +130,7 @@ Là encore, TFT perd de 5 points. J'ai compris pourquoi : chaque trahison qu'ell
 elle la rend au tour suivant, donc les comptes s'équilibrent, sauf la toute dernière
 trahison, qu'elle n'a pas le temps de rendre. TFT ne peut donc jamais battre personne.
 
-#### 3. JOSS — commit `feat: stratégie JOSS`
+#### 3. JOSS — commit `feat: strategie JOSS`
 
 JOSS m'a montré pour la première fois ce que j'ai appelé ensuite « l'engrenage ». Voici les
 40 premiers coups d'une partie contre TFT (C = coopère, D = trahit) :
@@ -510,7 +510,8 @@ réparer une erreur. Pour en avoir le cœur net, j'ai relancé le tournoi en lai
 stratégie jouer aussi contre son double (`--contre-soi`). Deux PAVLOV s'entendent bien
 mieux que deux TFT ou deux GRIM : quand l'une se trompe, elles se retrouvent toutes les
 deux à trahir, changent ensemble et repartent sur de bonnes bases. PAVLOV contre son double
-fait 2900 points, contre 2568 pour TFT et 2055 pour GRIM.
+fait 2900 points, contre 2568 pour TFT et 2055 pour GRIM
+(commande : `python3 main.py --etape 2 --bruit 0.05 --contre-soi`).
 
 Le problème, c'est que dans le tournoi normal, une stratégie ne joue jamais contre
 elle-même. PAVLOV ne rencontre donc jamais quelqu'un qui pardonne de la même façon qu'elle.
@@ -541,7 +542,7 @@ fâche GRIM.
 Je pensais que le bruit allait récompenser les stratégies qui pardonnent. Dans mon tournoi,
 c'est presque l'inverse : il récompense celles qui **savent être méchantes au bon moment**,
 tant qu'il reste des proies à exploiter (ALL-C, PAVLOV, RANDOM).
-PAVLOV pardonne inutilement, entouré de stratégies qui ne pardonnent pas de la même façon,
+PAVLOV pardonne pour rien : entourée de stratégies qui ne pardonnent pas de la même façon,
 elle ne peut pas en profiter.
 
 C'est la même leçon qu'aux étapes 1 et 2 : on ne peut pas dire qu'une stratégie
