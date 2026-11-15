@@ -65,11 +65,17 @@ chronologique ; chaque étape renvoie au commit correspondant.
 
 ### Nouvelles stratégies (étape 2)
 
-#### GRIM (rancunière, « grim trigger »)
+#### GRIM 
 - **Règle :** coopère tant que l'adversaire n'a jamais trahi ; dès sa première trahison, trahit jusqu'à la fin de la partie.
 - **Devrait bien jouer contre :** les coopérateurs (coopération totale comme TFT) et RANDOM (elle l'exploite à partir de sa première trahison, contrairement à TFT qui continue à lui pardonner).
 - **Devrait mal jouer contre :** les stratégies qui trahissent une seule fois par erreur ou par sonde (JOSS, TESTER) : elle ne pardonne jamais, donc D/D jusqu'à la fin. Elle sera très fragile au bruit (étape 3).
 - **Raison de l'ajout :** c'est TFT sans pardon. La comparer à TFT montre ce que rapporte le pardon.
+
+#### PAVLOV 
+- **Règle :** coopère au premier tour. Ensuite, si le tour précédent a rapporté beaucoup (3 ou 5 points), rejoue le même coup ; sinon (0 ou 2 points), change de coup.
+- **Devrait bien jouer contre :** les coopératives (coopération totale), et elle-même même après une erreur : deux PAVLOV qui se trahissent par accident tombent en D/D, changent toutes les deux et reviennent à C/C.
+- **Devrait mal jouer contre :** ALL-D. Après un D/D (2 points, « perdu »), elle repasse à C et se fait reprendre : elle alterne C et D, soit 1 point par tour en moyenne, deux fois moins que TFT.
+- **Raison de l'ajout :** une stratégie qui pardonne, mais d'une façon différente de TFT.
 
 ---
 
@@ -327,3 +333,33 @@ Observations :
 Prédiction (avant de relancer le tournoi) : GRIM devrait se classer haut, peut-être
 devant ALL-D, car elle gagne presque autant qu'ALL-D contre RANDOM et beaucoup plus
 contre TFT.
+
+#### 8. PAVLOV — commit `feat: stratégie PAVLOV`
+
+Implémentation : avec la matrice du cours, « beaucoup gagné » (3 ou 5) arrive exactement
+quand l'adversaire a coopéré, et « peu gagné » (0 ou 2) quand il a trahi. La règle s'écrit
+donc : si l'adversaire a joué C, je garde mon coup ; s'il a joué D, je change.
+
+Test contre chaque stratégie, graine 67, 16 premiers coups :
+
+```
+PAVLOV vs TFT    score (600, 600)   PAVLOV CCCCCCCCCCCCCCCC | TFT CCCCCCCCCCCCCCCC
+PAVLOV vs ALL-D  score (200, 700)   PAVLOV CDCDCDCDCDCDCDCD | ALL-D DDDDDDDDDDDDDDDD
+PAVLOV vs RANDOM score (490, 500)   PAVLOV CCDCCDDCDDDDDDDD | RANDOM CDDCDCDDCCCCCCCC
+PAVLOV vs TESTER score (467, 467)   PAVLOV CDDCDDCDDCDDCDDC | TESTER DCDDCDDCDDCDDCDD
+PAVLOV vs JOSS   score (440, 490)   PAVLOV CDDCDDCDDCDDCDDC | JOSS DCDDCDDCDDCDDCDD
+PAVLOV vs GRIM   score (600, 600)   PAVLOV CCCCCCCCCCCCCCCC | GRIM CCCCCCCCCCCCCCCC
+PAVLOV vs PAVLOV score (600, 600)   PAVLOV CCCCCCCCCCCCCCCC | PAVLOV CCCCCCCCCCCCCCCC
+```
+
+Observations :
+- **Contre ALL-D, PAVLOV est le pire de toutes** : 200 points (C, D, C, D…). Après un D/D
+  à 2 points, elle « croit » avoir perdu et revient à C, où elle prend 0. TFT, elle, reste
+  en D et fait 398.
+- **Contre TESTER, cycle de longueur 3** (PAVLOV C, D, D / TESTER D, C, D) : 0 + 5 + 2 = 7 points
+  tous les 3 tours, soit 467 par partie, moins que TFT contre TESTER (500).
+- **Contre les gentilles, coopération totale** (600), comme TFT et GRIM.
+
+Prédiction (avant de relancer le tournoi) : sans bruit, PAVLOV devrait se classer **en
+dessous de TFT**, à cause de la perte face à ALL-D (environ 1000 points de moins sur 5 parties).
+Son avantage ne devrait apparaître qu'avec le bruit (étape 3).

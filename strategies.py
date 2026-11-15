@@ -54,7 +54,21 @@ def tester(mes_coups, coups_adverses, rng):
 
 
 def grim(mes_coups, coups_adverses, rng):
-    """GRIM : coopère tant que l'adversaire n'a jamais trahi. Si elle est trahie, trahie jus'à la fin."""
+    """GRIM : coopère tant que l'adversaire n'a jamais trahi. Si elle est trahie, trahit jusqu'à la fin."""
     if "D" in coups_adverses:
+        return "D"
+    return "C"
+
+
+def pavlov(mes_coups, coups_adverses, rng):
+    """PAVLOV : coopère au premier tour.
+    Si le score gagné du tour précédent est supérieur ou égal à 3, rejoue le même coup ; sinon change de coup."""
+    if not mes_coups:
+        return "C"
+
+    mon_dernier = mes_coups[-1]
+    if coups_adverses[-1] == "C":  
+        return mon_dernier
+    if mon_dernier == "C":
         return "D"
     return "C"
